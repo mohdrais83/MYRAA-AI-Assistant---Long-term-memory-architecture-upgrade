@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">MYRAA Home</string>
+    <string name="voice_title">MYRAA Voice</string>
+    <string name="voice_open_description">Open voice interaction</string>
+    <string name="voice_state_idle">IDLE</string>
+    <string name="voice_state_listening">LISTENING</string>
+    <string name="voice_state_processing">PROCESSING</string>
+    <string name="voice_state_thinking">THINKING</string>
+    <string name="voice_state_speaking">SPEAKING</string>
+    <string name="voice_state_error">ERROR</string>
+    <string name="voice_state_cancelled">CANCELLED</string>
+    <string name="voice_state_permission">PERMISSION REQUIRED</string>
+    <string name="voice_idle_message">Tap the microphone to speak. Review and edit the transcription before sending.</string>
+    <string name="voice_starting_message">Starting speech recognition...</string>
+    <string name="voice_listening_message">Listening. Tap Stop to cancel.</string>
+    <string name="voice_processing_message">Processing speech...</string>
+    <string name="voice_draft_message">Review and edit your draft. It will not be sent automatically.</string>
+    <string name="voice_speech_unavailable">Speech recognition is not available on this device.</string>
+    <string name="voice_speech_failed">Speech recognition failed. Please try again.</string>
+    <string name="voice_no_speech">No speech was recognized. Please try again.</string>
+    <string name="voice_permission_message">Microphone permission is required to start speech recognition.</string>
+    <string name="voice_permission_denied">Microphone permission was denied. Voice capture is unavailable.</string>
+    <string name="voice_cancelled_message">Voice interaction cancelled. Your draft is retained.</string>
+    <string name="voice_empty_draft">Speak or enter a draft before playing it.</string>
+    <string name="voice_tts_preparing">Preparing speech playback...</string>
+    <string name="voice_tts_unavailable">Text-to-speech is not available on this device.</string>
+    <string name="voice_tts_failed">Speech playback failed.</string>
+    <string name="voice_tts_complete">Speech playback complete.</string>
+    <string name="voice_send_disabled">Sending is disabled until a verified secure Android conversation client is available.</string>
+    <string name="voice_start">Microphone</string>
+    <string name="voice_stop">Stop</string>
+    <string name="voice_speak_draft">Speak draft</string>
+    <string name="voice_confirm_send">Confirm &amp; send</string>
+    <string name="voice_close">Close</string>
+    <string name="voice_draft_hint">Your editable transcription draft</string>
+    <string name="orb_accessibility_description">MYRAA Titan Core Orb, %1$s. A four-point golden energy core inside a deep-blue glass sphere with metallic orbital rings.</string>
 </resources>
