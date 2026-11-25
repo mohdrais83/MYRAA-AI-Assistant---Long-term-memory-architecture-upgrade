@@ -39,6 +39,8 @@ class MainActivity : Activity() {
     private lateinit var assistantEntryPoint: AssistantInvocationEntryPoint
     private lateinit var voiceController: VoiceInteractionController
     private var voiceDialog: Dialog? = null
+    private var launcherOrbEntry: View? = null
+    private var launcherOrb: TitanCoreOrbView? = null
     private var voiceOrb: TitanCoreOrbView? = null
     private var voiceStatus: TextView? = null
     private var voiceMessage: TextView? = null
@@ -92,9 +94,44 @@ class MainActivity : Activity() {
             FrameLayout.LayoutParams(-1, -2),
         )
         root.addView(scrollView, FrameLayout.LayoutParams(-1, -1))
+        val orbEntry = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+            setOnClickListener {
+                assistantEntryPoint.request(AssistantInvocationSource.TOUCH)
+            }
+        }
+        launcherOrbEntry = orbEntry
+        launcherOrb = TitanCoreOrbView(this).apply {
+            setInteractionState(voiceSnapshot.state)
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        orbEntry.addView(launcherOrb, LinearLayout.LayoutParams(-1, dp(176)))
+        orbEntry.addView(
+            TextView(this).apply {
+                text = getString(R.string.voice_open_description).uppercase(Locale.ROOT)
+                textSize = 11f
+                gravity = Gravity.CENTER
+                setTextColor(Color.rgb(255, 215, 105))
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            },
+            LinearLayout.LayoutParams(-1, dp(24)),
+        )
+        root.addView(
+            orbEntry,
+            FrameLayout.LayoutParams(dp(204), dp(204), Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL),
+        )
+        updateLauncherOrbDescription(voiceSnapshot.state)
         root.setOnApplyWindowInsetsListener { _, insets ->
             val (top, bottom) = systemBarInsets(insets)
-            scrollView.setPadding(dp(12), top + dp(18), dp(12), bottom + dp(18))
+            scrollView.setPadding(dp(12), top + dp(18), dp(12), bottom + dp(220))
+            (launcherOrbEntry?.layoutParams as? FrameLayout.LayoutParams)?.let { layoutParams ->
+                layoutParams.bottomMargin = bottom + dp(4)
+                launcherOrbEntry?.layoutParams = layoutParams
+            }
             insets
         }
         setContentView(root)
@@ -113,6 +150,7 @@ class MainActivity : Activity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        launcherOrb?.requestLayout()
         voiceOrb?.requestLayout()
         voiceDialog?.window?.setLayout(
             (resources.displayMetrics.widthPixels * 0.9f).toInt(),
@@ -123,12 +161,12 @@ class MainActivity : Activity() {
     override fun onStart() {
         super.onStart()
         activityStarted = true
-        voiceOrb?.setActivityVisible(true)
+        updateOrbVisibility()
     }
 
     override fun onStop() {
         activityStarted = false
-        voiceOrb?.setActivityVisible(false)
+        updateOrbVisibility()
         if (::voiceController.isInitialized) voiceController.cancel()
         super.onStop()
     }
@@ -401,6 +439,7 @@ class MainActivity : Activity() {
                 voiceMessage = null
                 voiceDraft = null
                 voiceButton = null
+                updateOrbVisibility()
             }
             show()
             window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -410,6 +449,7 @@ class MainActivity : Activity() {
             )
             window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
+        updateOrbVisibility()
         renderVoiceSnapshot(voiceSnapshot)
     }
 
@@ -428,16 +468,9 @@ class MainActivity : Activity() {
     private fun renderVoiceSnapshot(snapshot: VoiceInteractionSnapshot) {
         voiceSnapshot = snapshot
         voiceOrb?.setInteractionState(snapshot.state)
-        val stateLabel = when (snapshot.state) {
-            VoiceInteractionState.IDLE -> R.string.voice_state_idle
-            VoiceInteractionState.LISTENING -> R.string.voice_state_listening
-            VoiceInteractionState.PROCESSING -> R.string.voice_state_processing
-            VoiceInteractionState.THINKING -> R.string.voice_state_thinking
-            VoiceInteractionState.SPEAKING -> R.string.voice_state_speaking
-            VoiceInteractionState.ERROR -> R.string.voice_state_error
-            VoiceInteractionState.CANCELLED -> R.string.voice_state_cancelled
-            VoiceInteractionState.PERMISSION_REQUIRED -> R.string.voice_state_permission
-        }
+        val stateLabel = voiceStateLabel(snapshot.state)
+        launcherOrb?.setInteractionState(snapshot.state)
+        updateLauncherOrbDescription(snapshot.state)
         voiceStatus?.apply {
             text = getString(stateLabel)
             contentDescription = "${getString(R.string.voice_title)}: ${getString(stateLabel)}"
@@ -464,6 +497,28 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.voice_start)
         }
+    }
+
+    private fun updateOrbVisibility() {
+        launcherOrb?.setActivityVisible(activityStarted && voiceDialog?.isShowing != true)
+        voiceOrb?.setActivityVisible(activityStarted && voiceDialog?.isShowing == true)
+    }
+
+    private fun updateLauncherOrbDescription(state: VoiceInteractionState) {
+        val label = getString(voiceStateLabel(state)).lowercase(Locale.ROOT)
+        launcherOrbEntry?.contentDescription =
+            "${getString(R.string.orb_accessibility_description, label)}. ${getString(R.string.voice_open_description)}"
+    }
+
+    private fun voiceStateLabel(state: VoiceInteractionState): Int = when (state) {
+        VoiceInteractionState.IDLE -> R.string.voice_state_idle
+        VoiceInteractionState.LISTENING -> R.string.voice_state_listening
+        VoiceInteractionState.PROCESSING -> R.string.voice_state_processing
+        VoiceInteractionState.THINKING -> R.string.voice_state_thinking
+        VoiceInteractionState.SPEAKING -> R.string.voice_state_speaking
+        VoiceInteractionState.ERROR -> R.string.voice_state_error
+        VoiceInteractionState.CANCELLED -> R.string.voice_state_cancelled
+        VoiceInteractionState.PERMISSION_REQUIRED -> R.string.voice_state_permission
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
