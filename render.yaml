@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: myraa-hosted-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    autoDeploy: false
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MYRAA_GEMINI_MODEL
+        sync: false
+      - key: MYRAA_OWNER_AUTHORITY_PUBLIC_KEY
+        sync: false
+      - key: MYRAA_RATE_LIMIT_HMAC_KEY
+        sync: false
+      - key: MYRAA_PUBLIC_ORIGIN
+        sync: false
+      - key: MYRAA_TRUST_PROXY_HOPS
+        sync: false
